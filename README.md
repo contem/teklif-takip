@@ -26,7 +26,7 @@ Vue 3 + Vite arayüzü, NestJS API ve PostgreSQL veritabanı kullanır.
 ### 2️⃣ Projeyi İndir
 
 ```bash
-git clone https://github.com/kullaniciadi/teklif-takip.git
+git clone https://github.com/contem/teklif-takip.git
 cd teklif-takip
 ```
 
