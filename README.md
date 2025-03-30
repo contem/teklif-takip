@@ -1,7 +1,7 @@
 # 🧾 Teklif Takip Uygulaması
 
-Müşteri ve teklif süreçlerini yönetmek için geliştirilen sade, güvenli ve Docker destekli bir web uygulamasıdır.  
-Vue 3 + Vite arayüzü, NestJS API ve PostgreSQL veritabanı kullanır.
+Bu uygulama sade arayüzüyle müşteri ve teklif süreçlerini kolaylaştırır.  
+Vue 3 (Vite), NestJS API ve PostgreSQL ile geliştirildi. Docker desteklidir.
 
 ---
 
@@ -9,84 +9,79 @@ Vue 3 + Vite arayüzü, NestJS API ve PostgreSQL veritabanı kullanır.
 
 - 👥 Müşteri oluşturma, listeleme, silme
 - 🧾 Teklif ekleme, güncelleme, filtreleme, silme
-- 📊 Duruma göre teklif özeti
+- 📊 Duruma göre teklif özeti (Beklemede, Kabul Edildi, Teslim Edildi)
 - 🔎 Arama ve filtreleme (müşteri & teklif)
-- 🧱 Docker ile veritabanı yönetimi
+- 🧱 Docker ile tüm servisleri ayağa kaldırma
 - 🚀 TypeScript + NestJS + Vue 3 + Composition API
 
 ---
 
-## ⚙️ Kurulum (Teknik Olmayanlar İçin)
-
-### 1️⃣ Gerekli Programlar
-
-- **Node.js** – [nodejs.org](https://nodejs.org)
-- **Docker Desktop** – [docker.com](https://www.docker.com/products/docker-desktop/)
-
-### 2️⃣ Projeyi İndir
+## ⚙️ Kurulum (Tek Komutla)
 
 ```bash
 git clone https://github.com/contem/teklif-takip.git
 cd teklif-takip
+cp .env.example .env # veya elle oluştur
+docker-compose up --build -d
 ```
 
-### 3️⃣ Veritabanını Başlat
+> Ardından tarayıcıda:
+> - Vue Arayüz → http://localhost:5173  
+> - NestJS API → http://localhost:3000
+
+---
+
+## ⚙️ Geliştirici Kurulumu (elle başlatmak isteyenler için)
+
+> Alternatif olarak klasik yöntemle projeyi ayrı ayrı çalıştırmak da mümkün:
+
+### 1️⃣ PostgreSQL'i Docker ile başlat
 
 ```bash
-docker-compose up -d
+docker-compose up -d postgres
 ```
 
-> PostgreSQL otomatik olarak `5432` portundan çalışır.
-
-### 4️⃣ API'yi Başlat (Backend)
+### 2️⃣ Backend (NestJS)
 
 ```bash
-cd teklif-takip-api
+cd backend
 npm install
 npm run start:dev
 ```
 
-### 5️⃣ Arayüzü Başlat (Frontend)
+### 3️⃣ Frontend (Vue 3 + Vite)
 
 ```bash
-cd ../teklif-takip-ui
+cd frontend
 npm install
 npm run dev
 ```
 
-### ✅ Uygulama çalıştı!
-
-- Vue Arayüz → [http://localhost:5173](http://localhost:5173)
-- NestJS API → [http://localhost:3000](http://localhost:3000)
-
 ---
 
-## 🛠️ Kurulum (Teknik Kullanıcılar İçin)
+## 🔐 .env Dosyası
 
-### .env içeriği (`teklif-takip-api/.env`)
+Proje kök dizinine `.env` dosyasını oluştur:
 
 ```env
-DB_HOST=localhost
-DB_PORT=5432
-DB_USERNAME=teklif_admin
-DB_PASSWORD=strongpassword357
-DB_NAME=teklifdb
+POSTGRES_USER=teklif_admin
+POSTGRES_PASSWORD=gucluSifre123
+POSTGRES_DB=teklifdb
 ```
 
-### Docker PostgreSQL + pgAdmin
-
-> `docker-compose.yml` PostgreSQL’i otomatik olarak çalıştırır.  
-Gerekirse pgAdmin gibi GUI araçları ile bağlantı kurabilirsin.
+NestJS backend zaten bu değerleri `docker-compose.yml` üzerinden alır.  
+Frontend için ek yapılandırma gerekmez.
 
 ---
 
-## 📂 Proje Yapısı
+## 📁 Proje Yapısı
 
 ```
 teklif-takip/
-├── teklif-takip-api/       → NestJS API
-├── teklif-takip-ui/        → Vue 3 + Vite arayüz
-├── docker-compose.yml      → PostgreSQL servisi
+├── backend/               # NestJS API (Docker destekli)
+├── frontend/              # Vue 3 arayüz (Docker destekli)
+├── docker-compose.yml     # Tüm servisleri tanımlar
+├── .env                   # Ortak env dosyası
 └── README.md
 ```
 
@@ -94,10 +89,17 @@ teklif-takip/
 
 ## 🚀 Kullanım Notları
 
-- Arayüzden müşteri & teklif ekleyebilirsin
-- Tekliflerin durumunu (Beklemede, Kabul Edildi, Teslim Edildi...) güncelleyebilirsin
-- Tüm kayıtlar filtrelenebilir ve özetlenir
-- Authentication (giriş) yoktur, sadece local kullanım için uygundur
+- Vue üzerinden müşteri ve teklif eklenebilir
+- Teklif durumu güncellenebilir (Beklemede, Kabul Edildi, Teslim Edildi)
+- Duruma ve başlığa göre filtrelenebilir
+- Giriş/şifre yoktur – sadece local kullanım için uygundur
+
+---
+
+## 💡 Katkı ve Öneri
+
+Eğer bu uygulamayı kullanabilecek tanıdıklarınız varsa paylaşabilirsiniz.  
+Geri bildirim ve katkılara açığım 🙌
 
 ---
 
