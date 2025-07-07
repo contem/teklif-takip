@@ -1,160 +1,156 @@
 <template>
   <div class="container">
-    <h2>Müşteriler</h2>
-
-    <form class="form" @submit.prevent="addCustomer">
-      <input v-model="form.name" placeholder="Ad Soyad" required />
-      <input v-model="form.company" placeholder="Firma Adı" />
-      <input v-model="form.phone" placeholder="Telefon" />
-      <input v-model="form.email" placeholder="E-posta" />
-      <button type="submit">➕ Ekle</button>
-    </form>
-
-    <input
-      v-model="filter"
-      placeholder="Müşteri ara (isim, firma, mail...)"
-      class="filter-input"
-    />
-
-    <div class="customer-list" v-if="filteredCustomers.length">
-      <div class="customer-card" v-for="customer in filteredCustomers" :key="customer.id">
-        <strong>{{ customer.name }}</strong>
-        <p>{{ customer.company }}</p>
-        <p><small>{{ customer.email }}</small></p>
-        <p><small>{{ customer.phone }}</small></p>
-        <button class="delete-btn" @click="deleteCustomer(customer.id)">🗑️ Sil</button>
-      </div>
-    </div>
-
-    <p v-else>Aradığınız kritere uygun kayıt bulunamadı.</p>
+    <el-card class="box-card">
+      <h2>Müşteriler</h2>
+      <vee-form :validation-schema="schema" @submit="onSubmit">
+        <el-row :gutter="12">
+          <el-col :xs="24" :sm="12">
+            <vee-field name="name" v-slot="{ field, errorMessage }">
+              <el-form-item label="Ad Soyad" :error="errorMessage">
+                <el-input
+                  :model-value="field.value"
+                  @update:model-value="field.onChange"
+                  placeholder="Ad Soyad"
+                />
+              </el-form-item>
+            </vee-field>
+          </el-col>
+          <el-col :xs="24" :sm="12">
+            <vee-field name="company" v-slot="{ field, errorMessage }">
+              <el-form-item label="Firma Adı" :error="errorMessage">
+                <el-input
+                  :model-value="field.value"
+                  @update:model-value="field.onChange"
+                  placeholder="Firma Adı"
+                />
+              </el-form-item>
+            </vee-field>
+          </el-col>
+        </el-row>
+        <el-row :gutter="12">
+          <el-col :xs="24" :sm="12">
+            <vee-field name="phone" v-slot="{ field, errorMessage }">
+              <el-form-item label="Telefon" :error="errorMessage">
+                <el-input
+                  :model-value="field.value"
+                  @update:model-value="field.onChange"
+                  placeholder="Telefon"
+                />
+              </el-form-item>
+            </vee-field>
+          </el-col>
+          <el-col :xs="24" :sm="12">
+            <vee-field name="email" v-slot="{ field, errorMessage }">
+              <el-form-item label="E-posta" :error="errorMessage">
+                <el-input
+                  :model-value="field.value"
+                  @update:model-value="field.onChange"
+                  placeholder="E-posta"
+                />
+              </el-form-item>
+            </vee-field>
+          </el-col>
+        </el-row>
+        <el-form-item>
+          <el-button type="primary" native-type="submit" :loading="loading">Ekle</el-button>
+        </el-form-item>
+      </vee-form>
+      <el-input v-model="filter" placeholder="Müşteri ara (isim, firma, mail...)" class="filter-input" clearable style="margin: 1rem 0;" />
+      <el-skeleton v-if="loading" :rows="4" animated />
+      <el-row v-else :gutter="12">
+        <el-col v-for="customer in filteredCustomers" :key="customer.id" :xs="24" :sm="12">
+          <el-card class="customer-card">
+            <div class="card-content">
+              <p><strong>{{ customer.name }}</strong></p>
+              <p>{{ customer.company }}</p>
+              <p><small>{{ customer.email }}</small></p>
+              <p><small>{{ customer.phone }}</small></p>
+              <el-button type="danger" size="small" @click="remove(customer.id)">Sil</el-button>
+            </div>
+          </el-card>
+        </el-col>
+      </el-row>
+      <el-empty v-if="!filteredCustomers.length && !loading" description="Kayıt bulunamadı." />
+    </el-card>
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted, computed } from 'vue'
-import api from '../api'
+import { ref, computed, onMounted } from 'vue'
+import { useCustomers } from '@/composables/useCustomers'
+import { ElNotification } from 'element-plus'
+import { Form as VeeForm, Field as VeeField } from 'vee-validate'
+import * as yup from 'yup'
 
-const customers = ref([])
 const filter = ref('')
-
-const form = ref({
-  name: '',
-  company: '',
-  phone: '',
-  email: '',
+const schema = yup.object({
+  name: yup.string().required('Ad zorunlu'),
+  company: yup.string().required('Firma zorunlu'),
+  phone: yup.string(),
+  email: yup.string().email('Geçerli e-posta girin'),
 })
 
-const getCustomers = async () => {
-  const res = await api.get('/customers')
-  customers.value = res.data
-}
-
-const deleteCustomer = async (id) => {
-  try {
-    await api.delete(`/customers/${id}`)
-    customers.value = customers.value.filter((c) => c.id !== id)
-  } catch (err) {
-    console.error('Müşteri silinemedi:', err)
-  }
-}
-
-const addCustomer = async () => {
-  try {
-    await api.post('/customers', form.value)
-    form.value = { name: '', company: '', phone: '', email: '' }
-    await getCustomers()
-  } catch (err) {
-    console.error('Ekleme hatası:', err)
-  }
-}
+const { customers, loading, error, fetchCustomers, addCustomer, removeCustomer } = useCustomers()
 
 const filteredCustomers = computed(() => {
-  return customers.value.filter((c) => {
-    const query = filter.value.toLowerCase()
-    return (
-      c.name.toLowerCase().includes(query) ||
-      c.company?.toLowerCase().includes(query) ||
-      c.email?.toLowerCase().includes(query) ||
-      c.phone?.toLowerCase().includes(query)
-    )
-  })
+  const query = filter.value.toLowerCase()
+  return customers.value.filter((c) =>
+    c.name.toLowerCase().includes(query) ||
+    c.company?.toLowerCase().includes(query) ||
+    c.email?.toLowerCase().includes(query) ||
+    c.phone?.toLowerCase().includes(query)
+  )
 })
 
-onMounted(getCustomers)
+const onSubmit = async (values, { resetForm }) => {
+  await addCustomer(values)
+  if (!error.value) {
+    ElNotification({ title: 'Başarılı', message: 'Müşteri eklendi', type: 'success' })
+    resetForm()
+  } else {
+    ElNotification({ title: 'Hata', message: 'Müşteri eklenemedi', type: 'error' })
+  }
+}
+
+const remove = async (id) => {
+  await removeCustomer(id)
+  if (!error.value) {
+    ElNotification({ title: 'Başarılı', message: 'Müşteri silindi', type: 'success' })
+  } else {
+    ElNotification({ title: 'Hata', message: 'Müşteri silinemedi', type: 'error' })
+  }
+}
+
+onMounted(fetchCustomers)
 </script>
 
 <style scoped>
 .container {
-  max-width: 600px;
+  max-width: 800px;
   margin: 2rem auto;
   padding: 1rem;
-  font-family: 'Segoe UI', sans-serif;
 }
-
-h2 {
-  text-align: center;
-  margin-bottom: 1.5rem;
+.box-card {
+  padding: 1.5rem 1rem;
 }
-
-.form input {
-  display: block;
-  width: 100%;
-  margin-bottom: 8px;
-  padding: 10px;
-  border: 1px solid #ccc;
-  border-radius: 6px;
+.customer-card {
+  margin-bottom: 1rem;
 }
-
-.form button {
-  padding: 10px 20px;
-  background: #007bff;
-  border: none;
-  border-radius: 6px;
-  color: white;
-  cursor: pointer;
-  transition: background 0.2s;
-}
-.form button:hover {
-  background: #0056b3;
-}
-
-.filter-input {
-  margin: 1rem 0;
-  padding: 10px;
-  border-radius: 6px;
-  border: 1px solid #ccc;
-  width: 100%;
-}
-
-.customer-list {
+.card-content {
   display: flex;
   flex-direction: column;
-  gap: 12px;
-  margin-top: 1rem;
+  gap: 0.05rem;
 }
-
-.customer-card {
-  background: #f8f9fa;
-  padding: 1rem;
-  border: 1px solid #ddd;
-  border-radius: 8px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
-}
-
 .customer-card p {
-  margin: 4px 0;
+  margin: 0 0 0.5rem 0;
+  padding: 0;
 }
-
-.delete-btn {
-  margin-top: 8px;
-  padding: 6px 12px;
-  background: #dc3545;
-  color: white;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-}
-.delete-btn:hover {
-  background: #c82333;
+@media (max-width: 600px) {
+  .container {
+    padding: 0.5rem;
+  }
+  .box-card {
+    padding: 0.5rem;
+  }
 }
 </style>
