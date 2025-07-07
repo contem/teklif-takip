@@ -5,13 +5,23 @@ Vue 3 (Vite), NestJS API ve PostgreSQL ile geliştirildi. Docker desteklidir.
 
 ---
 
-## 📌 Özellikler
+## 📸 Ekran Görüntüleri
+
+### Müşteriler Ekranı
+![Müşteriler](docs/customers.png)
+
+### Teklifler Ekranı
+![Teklifler](docs/offers.png)
+
+---
+
+## 📋 Özellikler
 
 - 👥 Müşteri oluşturma, listeleme, silme
 - 🧾 Teklif ekleme, güncelleme, filtreleme, silme
 - 📊 Duruma göre teklif özeti (Beklemede, Kabul Edildi, Teslim Edildi)
 - 🔎 Arama ve filtreleme (müşteri & teklif)
-- 🧱 Docker ile tüm servisleri ayağa kaldırma
+- 🧑‍💻 Docker ile tüm servisleri ayağa kaldırma
 - 🚀 TypeScript + NestJS + Vue 3 + Composition API
 
 ---
